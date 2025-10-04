@@ -8,5 +8,6 @@ namespace ProductCatalog.Infrastructure.Persistence.Interceptors
 {
     internal class DomainEventInterceptor
     {
+        // implementieren
     }
 }

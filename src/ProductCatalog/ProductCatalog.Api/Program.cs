@@ -49,5 +49,9 @@ app.MapProductEndpoints();
 
 app.Run();
 
-// Make Program class accessible for testing
-public partial class Program { }
+/// <summary>
+/// Partial Program class to enable integration testing.
+/// </summary>
+public partial class Program
+{
+}

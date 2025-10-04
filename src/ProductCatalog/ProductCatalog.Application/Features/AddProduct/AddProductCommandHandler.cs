@@ -29,6 +29,7 @@ public class AddProductCommandHandler : IRequestHandler<AddProductCommand, Guid>
     /// <returns>The ID of the created product.</returns>
     public async Task<Guid> Handle(AddProductCommand request, CancellationToken cancellationToken)
     {
+        // sollten die Klassen aus diesem Ordner in eine Datei? Wegen der Vertical Slice Architecture?
         var price = new Price(request.PriceAmount, request.Currency);
         var product = Product.Create(
             request.Name,
@@ -36,7 +37,7 @@ public class AddProductCommandHandler : IRequestHandler<AddProductCommand, Guid>
             price,
             request.InitialStock);
 
-        await _repository.AddAsync(product);
+        await _repository.AddAsync(product, cancellationToken);
 
         return product.Id;
     }

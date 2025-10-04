@@ -40,5 +40,4 @@ public record AddProductCommand(
     /// </summary>
     /// <example>25</example>
     [Required]
-    int InitialStock
-) : IRequest<Guid>;
+    int InitialStock) : IRequest<Guid>;

@@ -26,9 +26,10 @@ public class ChangePriceCommandHandler : IRequestHandler<ChangePriceCommand>
     /// </summary>
     /// <param name="request">The change price command.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
     public async Task Handle(ChangePriceCommand request, CancellationToken cancellationToken)
     {
-        var product = await _repository.GetByIdAsync(request.ProductId);
+        var product = await _repository.GetByIdAsync(request.ProductId, cancellationToken);
         if (product == null)
         {
             throw new InvalidOperationException($"Product with ID {request.ProductId} not found.");
@@ -37,6 +38,6 @@ public class ChangePriceCommandHandler : IRequestHandler<ChangePriceCommand>
         var newPrice = new Price(request.NewPriceAmount, request.Currency);
         product.ChangePrice(newPrice);
 
-        await _repository.UpdateAsync(product);
+        await _repository.UpdateAsync(product, cancellationToken);
     }
 }
