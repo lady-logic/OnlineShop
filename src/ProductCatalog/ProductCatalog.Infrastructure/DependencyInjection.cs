@@ -3,6 +3,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using ProductCatalog.Domain.Repositories;
 using ProductCatalog.Infrastructure.Persistence;
+using ProductCatalog.Infrastructure.Persistence.Interceptors;
+using ProductCatalog.Infrastructure.Persistence.Outbox;
 using ProductCatalog.Infrastructure.Persistence.Repositories;
 
 namespace ProductCatalog.Infrastructure;
@@ -20,9 +22,22 @@ public static class DependencyInjection
     /// <returns>The configured service collection.</returns>
     public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
-        // SQLite Database
-        services.AddDbContext<ProductCatalogDbContext>(options =>
-            options.UseSqlite(configuration.GetConnectionString("DefaultConnection") ?? "Data Source=productcatalog.db"));
+        // Interceptor als Service registrieren
+        services.AddScoped<DomainEventInterceptor>();
+
+        // DbContext mit Interceptor
+        services.AddDbContext<ProductCatalogDbContext>((serviceProvider, options) =>
+        {
+            var connectionString = configuration.GetConnectionString("DefaultConnection");
+            options.UseSqlite(connectionString);
+
+            // Interceptor hinzufügen
+            options.AddInterceptors(
+                serviceProvider.GetRequiredService<DomainEventInterceptor>());
+        });
+
+        // Outbox Processor als Background Service registrieren
+        services.AddHostedService<OutboxProcessor>();
 
         // Repositories
         services.AddScoped<IProductRepository, ProductRepository>();

@@ -27,6 +27,7 @@ public class AddProductCommandHandlerTests
     /// Tests that a valid <see cref="AddProductCommand"/> creates a product and returns its ID.
     /// </summary>
     /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+    [Fact]
     public async Task Handle_WithValidCommand_ShouldCreateProductAndReturnId()
     {
         // Arrange
