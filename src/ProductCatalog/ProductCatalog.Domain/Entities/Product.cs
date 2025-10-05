@@ -1,5 +1,6 @@
 ﻿using ProductCatalog.Domain.Common;
 using ProductCatalog.Domain.Events;
+using ProductCatalog.Domain.Exceptions;
 using ProductCatalog.Domain.ValueObjects;
 
 namespace ProductCatalog.Domain.Entities;
@@ -73,10 +74,27 @@ public class Product : AggregateRoot
     /// <returns>A new product instance.</returns>
     public static Product Create(string name, string description, Price price, int initialStock)
     {
-        // EntityTypeConfiguration nachlesen -> Konfiguration
-        // SequentialGuid nachlesen
-        // Validation ergänzen
-        // Warum private Konstruktoren? Factory Method Pattern?
+        // Validation
+        if (string.IsNullOrWhiteSpace(name))
+        {
+            throw new InvalidProductNameException(name ?? string.Empty);
+        }
+
+        if (name.Length > 200)
+        {
+            throw new InvalidProductNameException(name);
+        }
+
+        if (price == null || price.Amount < 0)
+        {
+            throw new InvalidPriceException(price?.Amount ?? 0);
+        }
+
+        if (initialStock < 0)
+        {
+            throw new InvalidStockException(initialStock);
+        }
+
         var product = new Product(Guid.NewGuid(), name, description, price, initialStock);
         product.AddDomainEvent(new ProductAdded(product.Id, name, description, price.Amount, price.Currency, initialStock));
         return product;
@@ -88,10 +106,13 @@ public class Product : AggregateRoot
     /// <param name="newPrice">The new price for the product.</param>
     public void ChangePrice(Price newPrice)
     {
+        if (newPrice == null || newPrice.Amount < 0)
+        {
+            throw new InvalidPriceException(newPrice?.Amount ?? 0);
+        }
+
         var oldPrice = Price;
         Price = newPrice;
-        // Validation ergänzen
-        //if()
         AddDomainEvent(new PriceChanged(Id, oldPrice.Amount, newPrice.Amount, newPrice.Currency));
     }
 
@@ -101,6 +122,11 @@ public class Product : AggregateRoot
     /// <param name="newStock">The new stock quantity.</param>
     public void UpdateStock(int newStock)
     {
+        if (newStock < 0)
+        {
+            throw new InvalidStockException(newStock);
+        }
+
         var oldStock = Stock;
         Stock = newStock;
         AddDomainEvent(new StockUpdated(Id, oldStock, newStock));
