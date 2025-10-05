@@ -28,10 +28,18 @@ Das Projekt basiert auf einem Event Storming Workshop, bei dem die folgenden Dom
 ## Architektur
 
 ### Clean Architecture + DDD
-- **Domain Layer**: Entities, Value Objects, Domain Events, Repository Interfaces
+- **Domain Layer**: Entities, Value Objects, Domain Events, Domain Exceptions
 - **Application Layer**: Use Cases, Commands, Queries, Handlers (CQRS)
-- **Infrastructure Layer**: Database, Repository Implementations, External Services
+- **Infrastructure Layer**: Database, Repository Implementations, Event Processing
 - **API Layer**: HTTP Endpoints, Dependency Injection Setup
+
+### Implementierte DDD Patterns
+- **Aggregate Root**: Product als Aggregate mit invarianten Schutz
+- **Value Objects**: Price als immutable Value Object
+- **Domain Events**: Event-basierte Kommunikation zwischen Aggregates
+- **Factory Method Pattern**: Kontrollierte Entity-Erstellung mit Validation
+- **Repository Pattern**: Abstraktion der Datenzugriffsschicht
+- **Transactional Outbox Pattern**: Garantierte Event-Auslieferung
 
 ### Vertical Slice Architecture
 Jedes Feature ist als eigenständiger "Slice" implementiert:
@@ -51,7 +59,18 @@ Features/AddProduct/
 - **CQRS**: MediatR für Command/Query Separation
 - **Validation**: FluentValidation für Input-Validierung
 - **ORM**: Entity Framework Core mit SQLite
+- **Domain Events**: MediatR mit Transactional Outbox Pattern
+- **Background Services**: .NET Hosted Services für Event Processing
 - **API Documentation**: Swagger/OpenAPI
+
+### Patterns & Practices
+- **Domain-Driven Design**: Aggregates, Value Objects, Domain Events
+- **CQRS**: Command/Query Responsibility Segregation
+- **Event Sourcing Ready**: Domain Events als First-Class Citizens
+- **Transactional Outbox**: Atomare Persistence mit garantierter Event-Auslieferung
+- **EF Core Interceptors**: Automatische Event-Persistierung
+- **Factory Method Pattern**: Kontrollierte Object Creation
+- **Repository Pattern**: Clean Data Access Abstraction
 
 ### Development Tools
 - **Code Quality**: StyleCop für Code-Standards
@@ -61,7 +80,7 @@ Features/AddProduct/
 
 ### Future Integrations
 - **Service Discovery**: .NET Aspire (Geplant)
-- **Event Bus**: RabbitMQ für Domain Events (Geplant)
+- **Event Bus**: RabbitMQ für verteilte Events (Geplant)
 - **Caching**: Redis für Performance (Geplant)
 - **Monitoring**: Observability mit Aspire (Geplant)
 
@@ -105,11 +124,21 @@ dotnet run
 
 ```
 src/ProductCatalog/
-├── ProductCatalog.Api/          # HTTP Endpoints, Program.cs
-├── ProductCatalog.Application/  # Use Cases, Commands, Queries
-├── ProductCatalog.Domain/       # Entities, Value Objects, Events
-├── ProductCatalog.Infrastructure/ # Database, Repositories
-└── ProductCatalog.Tests/        # Unit & Integration Tests
+├── ProductCatalog.Api/              # HTTP Endpoints, Program.cs
+├── ProductCatalog.Application/      # Use Cases, Commands, Queries
+├── ProductCatalog.Domain/           # Entities, Value Objects, Events, Exceptions
+│   ├── Common/                      # AggregateRoot, IDomainEvent
+│   ├── Entities/                    # Product Aggregate
+│   ├── Events/                      # Domain Events
+│   ├── Exceptions/                  # Domain-specific Exceptions
+│   └── ValueObjects/                # Price Value Object
+├── ProductCatalog.Infrastructure/   # Database, Repositories, Event Processing
+│   ├── Persistence/
+│   │   ├── Configurations/          # EF Core Entity Configurations
+│   │   ├── Interceptors/            # Domain Event Interceptor
+│   │   └── Outbox/                  # Outbox Pattern Implementation
+│   └── Repositories/                # Repository Implementations
+└── ProductCatalog.Tests/            # Unit & Integration Tests
 ```
 
 ## Tests
@@ -130,6 +159,10 @@ Dieses Projekt dient dem Erlernen von:
 - ✅ CQRS Pattern mit MediatR
 - ✅ Event Storming als Design-Methode
 - ✅ Vertical Slice Architecture
+- ✅ Transactional Outbox Pattern
+- ✅ Domain Events Processing
+- ✅ Factory Method Pattern
+- ✅ EF Core Interceptors
 - 🔄 Event-Driven Architecture (in Entwicklung)
 - 🔄 Microservices Communication (geplant)
 - 🔄 .NET Aspire für Service Orchestration (geplant)
