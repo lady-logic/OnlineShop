@@ -39,7 +39,7 @@ Das Projekt basiert auf einem Event Storming Workshop, bei dem die folgenden Dom
 - **Domain Events**: Event-basierte Kommunikation zwischen Aggregates
 - **Factory Method Pattern**: Kontrollierte Entity-Erstellung mit Validation
 - **Repository Pattern**: Abstraktion der Datenzugriffsschicht
-- **Transactional Outbox Pattern**: Garantierte Event-Auslieferung
+- **Transactional Outbox Pattern**: Garantierte Event-Auslieferung mit Transaktionssicherheit
 
 ### Vertical Slice Architecture
 Jedes Feature ist als eigenständiger "Slice" implementiert:
@@ -60,6 +60,7 @@ Features/AddProduct/
 - **Validation**: FluentValidation für Input-Validierung
 - **ORM**: Entity Framework Core mit SQLite
 - **Domain Events**: MediatR mit Transactional Outbox Pattern
+- **Message Broker**: MassTransit mit RabbitMQ für robuste Event-Verarbeitung
 - **Background Services**: .NET Hosted Services für Event Processing
 - **API Documentation**: Swagger/OpenAPI
 
@@ -68,6 +69,7 @@ Features/AddProduct/
 - **CQRS**: Command/Query Responsibility Segregation
 - **Event Sourcing Ready**: Domain Events als First-Class Citizens
 - **Transactional Outbox**: Atomare Persistence mit garantierter Event-Auslieferung
+- **Event Bus**: MassTransit für zuverlässige Bounded Context-Kommunikation
 - **EF Core Interceptors**: Automatische Event-Persistierung
 - **Factory Method Pattern**: Kontrollierte Object Creation
 - **Repository Pattern**: Clean Data Access Abstraction
@@ -80,7 +82,6 @@ Features/AddProduct/
 
 ### Future Integrations
 - **Service Discovery**: .NET Aspire (Geplant)
-- **Event Bus**: RabbitMQ für verteilte Events (Geplant)
 - **Caching**: Redis für Performance (Geplant)
 - **Monitoring**: Observability mit Aspire (Geplant)
 
@@ -89,6 +90,7 @@ Features/AddProduct/
 ### Voraussetzungen
 - .NET 8 SDK
 - Git
+- RabbitMQ Server (lokal oder via Docker)
 
 ### Installation
 ```bash
@@ -105,6 +107,9 @@ dotnet ef database update --project ../ProductCatalog.Infrastructure
 
 # API starten
 dotnet run
+
+# RabbitMQ starten (via Docker)
+docker run -d --name rabbitmq -p 5672:5672 -p 15672:15672 rabbitmq:3-management
 ```
 
 ### API testen
@@ -163,13 +168,13 @@ Dieses Projekt dient dem Erlernen von:
 - ✅ Domain Events Processing
 - ✅ Factory Method Pattern
 - ✅ EF Core Interceptors
-- 🔄 Event-Driven Architecture (in Entwicklung)
+- ✅ Event-Driven Architecture mit MassTransit/RabbitMQ
 - 🔄 Microservices Communication (geplant)
 - 🔄 .NET Aspire für Service Orchestration (geplant)
 
 
 ## Status
 
-**Aktueller Stand**: Product Catalog Bounded Context begonnen
-**Nächste Schritte**: Product Catalog Bounded Context weiter ausbauen
+**Aktueller Stand**: Product Catalog Bounded Context mit Event Bus-Integration
+**Nächste Schritte**: Shopping Basket Bounded Context implementieren
 

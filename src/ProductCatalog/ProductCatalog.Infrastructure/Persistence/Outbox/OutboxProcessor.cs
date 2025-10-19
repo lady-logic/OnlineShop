@@ -11,10 +11,11 @@ namespace ProductCatalog.Infrastructure.Persistence.Outbox;
 /// <summary>
 /// Background service that processes domain events from the outbox table.
 /// </summary>
-public class OutboxProcessor(IServiceProvider serviceProvider, ILogger<OutboxProcessor> logger) : BackgroundService
+public class OutboxProcessor(IServiceProvider serviceProvider, ILogger<OutboxProcessor> logger, IMessageBroker messageBroker) : BackgroundService
 {
     private readonly IServiceProvider _serviceProvider = serviceProvider;
     private readonly ILogger<OutboxProcessor> _logger = logger;
+    private readonly IMessageBroker _messageBroker = messageBroker;
 
     /// <summary>
     /// Executes the background service logic for processing outbox messages.
@@ -69,6 +70,8 @@ public class OutboxProcessor(IServiceProvider serviceProvider, ILogger<OutboxPro
 
         foreach (var message in messages)
         {
+            var transaction = await dbContext.Database.BeginTransactionAsync(cancellationToken);
+
             try
             {
                 // Event deserialisieren
@@ -90,12 +93,17 @@ public class OutboxProcessor(IServiceProvider serviceProvider, ILogger<OutboxPro
                     continue;
                 }
 
-                // Event publishen
-                await mediator.Publish(domainEvent, cancellationToken);
-
                 // Als verarbeitet markieren
                 message.ProcessedOnUtc = DateTime.UtcNow;
                 message.Error = null;
+
+                await dbContext.SaveChangesAsync(cancellationToken);
+
+                // Event publishen
+                await mediator.Publish(domainEvent, cancellationToken);
+                await _messageBroker.PublishAsync(domainEvent);
+
+                await transaction.CommitAsync(cancellationToken);
 
                 _logger.LogInformation(
                     "Successfully processed outbox message {Id} of type {Type}",
@@ -106,9 +114,9 @@ public class OutboxProcessor(IServiceProvider serviceProvider, ILogger<OutboxPro
             {
                 _logger.LogError(ex, "Error processing outbox message {Id}", message.Id);
                 message.Error = ex.Message;
+
+                await dbContext.SaveChangesAsync(cancellationToken);
             }
         }
-
-        await dbContext.SaveChangesAsync(cancellationToken);
     }
 }

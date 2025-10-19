@@ -1,7 +1,11 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using MassTransit;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using ProductCatalog.Domain.Common;
 using ProductCatalog.Domain.Repositories;
+using ProductCatalog.Infrastructure.EventBus;
 using ProductCatalog.Infrastructure.Persistence;
 using ProductCatalog.Infrastructure.Persistence.Interceptors;
 using ProductCatalog.Infrastructure.Persistence.Outbox;
@@ -41,6 +45,28 @@ public static class DependencyInjection
 
         // Repositories
         services.AddScoped<IProductRepository, ProductRepository>();
+
+        // MassTransit hinzufügen
+        services.AddMassTransit(x =>
+        {
+            x.UsingRabbitMq((context, cfg) =>
+            {
+                var host = configuration["RabbitMQ:HostName"] ?? "localhost";
+                var username = configuration["RabbitMQ:Username"] ?? "guest";
+                var password = configuration["RabbitMQ:Password"] ?? "guest";
+
+                cfg.Host(host, h =>
+                {
+                    h.Username(username);
+                    h.Password(password);
+                });
+
+                cfg.ConfigureEndpoints(context);
+            });
+        });
+
+        // IMessageBroker mit der MassTransit-Implementierung registrieren
+        services.AddSingleton<IMessageBroker, MassTransitMessageBroker>();
 
         return services;
     }
