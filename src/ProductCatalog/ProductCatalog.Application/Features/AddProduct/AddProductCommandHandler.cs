@@ -36,7 +36,7 @@ public class AddProductCommandHandler : IRequestHandler<AddProductCommand, Guid>
             price,
             request.InitialStock);
 
-        await _repository.AddAsync(product);
+        await _repository.AddAsync(product, cancellationToken);
 
         return product.Id;
     }

@@ -1,5 +1,6 @@
 ﻿using ProductCatalog.Domain.Common;
 using ProductCatalog.Domain.Events;
+using ProductCatalog.Domain.Exceptions;
 using ProductCatalog.Domain.ValueObjects;
 
 namespace ProductCatalog.Domain.Entities;
@@ -9,6 +10,30 @@ namespace ProductCatalog.Domain.Entities;
 /// </summary>
 public class Product : AggregateRoot
 {
+    /// <summary>
+    /// Initializes a new instance of the <see cref="Product"/> class.
+    /// </summary>
+    private Product()
+    {
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="Product"/> class with specified values.
+    /// </summary>
+    /// <param name="id">The product identifier.</param>
+    /// <param name="name">The product name.</param>
+    /// <param name="description">The product description.</param>
+    /// <param name="price">The product price.</param>
+    /// <param name="stock">The initial stock quantity.</param>
+    private Product(Guid id, string name, string description, Price price, int stock)
+    {
+        Id = id;
+        Name = name;
+        Description = description;
+        Price = price;
+        Stock = stock;
+    }
+
     /// <summary>
     /// Gets the unique identifier of the product.
     /// </summary>
@@ -40,30 +65,6 @@ public class Product : AggregateRoot
     public bool IsAvailable => Stock > 0;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="Product"/> class.
-    /// </summary>
-    private Product()
-    {
-    }
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="Product"/> class with specified values.
-    /// </summary>
-    /// <param name="id">The product identifier.</param>
-    /// <param name="name">The product name.</param>
-    /// <param name="description">The product description.</param>
-    /// <param name="price">The product price.</param>
-    /// <param name="stock">The initial stock quantity.</param>
-    private Product(Guid id, string name, string description, Price price, int stock)
-    {
-        Id = id;
-        Name = name;
-        Description = description;
-        Price = price;
-        Stock = stock;
-    }
-
-    /// <summary>
     /// Creates a new product with the specified details.
     /// </summary>
     /// <param name="name">The product name.</param>
@@ -73,6 +74,27 @@ public class Product : AggregateRoot
     /// <returns>A new product instance.</returns>
     public static Product Create(string name, string description, Price price, int initialStock)
     {
+        // Validation
+        if (string.IsNullOrWhiteSpace(name))
+        {
+            throw new InvalidProductNameException(name ?? string.Empty);
+        }
+
+        if (name.Length > 200)
+        {
+            throw new InvalidProductNameException(name);
+        }
+
+        if (price == null || price.Amount < 0)
+        {
+            throw new InvalidPriceException(price?.Amount ?? 0);
+        }
+
+        if (initialStock < 0)
+        {
+            throw new InvalidStockException(initialStock);
+        }
+
         var product = new Product(Guid.NewGuid(), name, description, price, initialStock);
         product.AddDomainEvent(new ProductAdded(product.Id, name, description, price.Amount, price.Currency, initialStock));
         return product;
@@ -84,6 +106,11 @@ public class Product : AggregateRoot
     /// <param name="newPrice">The new price for the product.</param>
     public void ChangePrice(Price newPrice)
     {
+        if (newPrice == null || newPrice.Amount < 0)
+        {
+            throw new InvalidPriceException(newPrice?.Amount ?? 0);
+        }
+
         var oldPrice = Price;
         Price = newPrice;
         AddDomainEvent(new PriceChanged(Id, oldPrice.Amount, newPrice.Amount, newPrice.Currency));
@@ -95,6 +122,11 @@ public class Product : AggregateRoot
     /// <param name="newStock">The new stock quantity.</param>
     public void UpdateStock(int newStock)
     {
+        if (newStock < 0)
+        {
+            throw new InvalidStockException(newStock);
+        }
+
         var oldStock = Stock;
         Stock = newStock;
         AddDomainEvent(new StockUpdated(Id, oldStock, newStock));

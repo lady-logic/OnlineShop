@@ -12,6 +12,29 @@ namespace ProductCatalog.Tests.Fixtures;
 public class ProductCatalogWebApplicationFactory : WebApplicationFactory<Program>, IAsyncLifetime
 {
     /// <summary>
+    /// Initializes the test database.
+    /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+    public async Task InitializeAsync()
+    {
+        using var scope = Services.CreateScope();
+        var context = scope.ServiceProvider.GetRequiredService<ProductCatalogDbContext>();
+        await context.Database.EnsureCreatedAsync();
+    }
+
+    /// <summary>
+    /// Cleans up the test database.
+    /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+    public new async Task DisposeAsync()
+    {
+        using var scope = Services.CreateScope();
+        var context = scope.ServiceProvider.GetRequiredService<ProductCatalogDbContext>();
+        await context.Database.EnsureDeletedAsync();
+        await base.DisposeAsync();
+    }
+
+    /// <summary>
     /// Configures the web host builder for testing.
     /// </summary>
     /// <param name="builder">The web host builder.</param>
@@ -34,26 +57,5 @@ public class ProductCatalogWebApplicationFactory : WebApplicationFactory<Program
         });
 
         builder.UseEnvironment("Testing");
-    }
-
-    /// <summary>
-    /// Initializes the test database.
-    /// </summary>
-    public async Task InitializeAsync()
-    {
-        using var scope = Services.CreateScope();
-        var context = scope.ServiceProvider.GetRequiredService<ProductCatalogDbContext>();
-        await context.Database.EnsureCreatedAsync();
-    }
-
-    /// <summary>
-    /// Cleans up the test database.
-    /// </summary>
-    public new async Task DisposeAsync()
-    {
-        using var scope = Services.CreateScope();
-        var context = scope.ServiceProvider.GetRequiredService<ProductCatalogDbContext>();
-        await context.Database.EnsureDeletedAsync();
-        await base.DisposeAsync();
     }
 }

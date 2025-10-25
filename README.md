@@ -1,40 +1,179 @@
-﻿# Online Shop - Domain Driven Design Learning Project
+# Online Shop - Domain Driven Design Learning Project
 
-Ein wachsendes Lernprojekt zur Implementierung von **Domain Driven Design (DDD)** und **Clean Architecture** mit .NET 8, entwickelt durch Event Storming und Vertical Slice Architecture.
+![.NET](https://img.shields.io/badge/.NET-8.0-512BD4?logo=dotnet)
+![C#](https://img.shields.io/badge/C%23-239120?logo=csharp&logoColor=white)
+![EF Core](https://img.shields.io/badge/EF%20Core-512BD4?logo=.net)
+![DDD](https://img.shields.io/badge/Architecture-DDD-blue)
+![CQRS](https://img.shields.io/badge/Pattern-CQRS-orange)
+![Clean Architecture](https://img.shields.io/badge/Architecture-Clean-green)
+![License](https://img.shields.io/badge/License-MIT-green)
 
-## Projektübersicht
+> A professional implementation of Domain-Driven Design principles with Clean Architecture, CQRS, and Event-Driven Architecture patterns using .NET 8
 
-Dieses Projekt ist ein **kontinuierlich wachsendes Lernprojekt**, das einen vollständigen Online-Shop implementiert. Aktuell ist der **Product Catalog** Bounded Context implementiert, weitere Contexts folgen schrittweise.
+## Project Overview
 
-### Geplante Bounded Contexts
-- ✅ **Product Catalog** - Produktverwaltung (Aktuell implementiert)
-- 🔄 **Shopping Basket** - Warenkorbfunktionalität (Geplant)
-- 🔄 **Checkout Process** - Bestellabwicklung (Geplant)
-- 🔄 **Payment** - Zahlungsabwicklung (Geplant)
-- 🔄 **Fulfillment** - Versand und Lieferung (Geplant)
+This is a continuously growing learning project implementing a complete online shop using Domain-Driven Design and Clean Architecture. Currently, the Product Catalog Bounded Context is implemented, with additional contexts planned incrementally.
 
-## Event Storming Basis
+## Event Storming & Domain Design
 
-Das Projekt basiert auf einem Event Storming Workshop, bei dem die folgenden Domain Events für den Product Catalog identifiziert wurden:
+This project was developed using Event Storming methodology to identify domain events, commands, and aggregates:
 
-- `ProductAdded` - Neues Produkt hinzugefügt
-- `ProductDetailsUpdated` - Produktdetails aktualisiert (Geplant)
-- `PriceChanged` - Preis geändert (Geplant)
-- `StockUpdated` - Lagerbestand aktualisiert (Geplant)
-- `ProductBecameUnavailable` - Produkt nicht mehr verfügbar (Geplant)
-- `StockValidationRequested` - Lagerbestand-Validierung angefordert (Geplant)
-- `StockValidationFailed` - Lagerbestand-Validierung fehlgeschlagen (Geplant)
+```mermaid
+graph LR
+    subgraph Legend[" "]
+        C1[Command]:::command
+        E1[Event]:::event
+        A1[Aggregate]:::aggregate
+        V1[Value Object]:::valueobject
+    end
+    
+    subgraph ProductCatalog["Product Catalog Bounded Context"]
+        
+        subgraph Commands["Commands"]
+            AddProduct[Add Product]:::command
+            UpdateDetails[Update Product Details]:::command
+            ChangePrice[Change Price]:::command
+            UpdateStock[Update Stock]:::command
+            GetAvailable[Get Available Products]:::query
+            GetAll[Get All Products]:::query
+            GetProduct[Get Product]:::query
+        end
+        
+        subgraph Aggregate["Aggregate / Entity"]
+            Product[Product<br/>Aggregate]:::aggregate
+            Price[Price<br/>Value Object]:::valueobject
+        end
+        
+        subgraph Events["Domain Events"]
+            ProductAdded[Product Added]:::event
+            DetailsUpdated[Product Details Updated]:::event
+            StockUpdated[Stock Updated]:::event
+            PriceChanged[Price Changed]:::event
+            BecameUnavailable[Product Became<br/>Unavailable]:::event
+            ValidationRequested[Stock Validation<br/>Requested]:::event
+            ValidationFailed[Stock Validation<br/>Failed]:::event
+        end
+        
+        AddProduct --> Product
+        UpdateDetails --> Product
+        ChangePrice --> Product
+        UpdateStock --> Product
+        
+        GetAvailable --> Product
+        GetAll --> Product
+        GetProduct --> Product
+        
+        Product --> ProductAdded
+        Product --> DetailsUpdated
+        Product --> StockUpdated
+        Product --> PriceChanged
+        Product --> BecameUnavailable
+        Product --> ValidationRequested
+        Product --> ValidationFailed
+        
+        Price -.-> Product
+    end
+    
+    classDef command fill:#F9E79F,stroke:#F39C12,stroke-width:2px,color:#000
+    classDef event fill:#F8B739,stroke:#E67E22,stroke-width:2px,color:#000
+    classDef aggregate fill:#85C1E9,stroke:#3498DB,stroke-width:3px,color:#000
+    classDef valueobject fill:#A9DFBF,stroke:#27AE60,stroke-width:2px,color:#000
+    classDef query fill:#F9E79F,stroke:#F39C12,stroke-width:2px,stroke-dasharray: 5 5,color:#000
+    
+    style ProductCatalog fill:#F8F9FA,stroke:#2C3E50,stroke-width:3px
+    style Legend fill:#FFFFFF,stroke:#BDC3C7,stroke-width:1px
+```
 
-## Architektur
+The Event Storming session identified the following key elements:
+- **Commands**: User actions that trigger domain changes
+- **Domain Events**: Business facts that have occurred
+- **Aggregate**: Product as the main domain object
+- **Value Objects**: Price for encapsulated business logic
 
-### Clean Architecture + DDD
-- **Domain Layer**: Entities, Value Objects, Domain Events, Repository Interfaces
-- **Application Layer**: Use Cases, Commands, Queries, Handlers (CQRS)
-- **Infrastructure Layer**: Database, Repository Implementations, External Services
-- **API Layer**: HTTP Endpoints, Dependency Injection Setup
+### Bounded Contexts Roadmap
+
+- ✅ **Product Catalog** - Product management (Currently implemented)
+- 🔄 **Shopping Basket** - Shopping cart functionality (Planned)
+- 🔄 **Checkout Process** - Order processing (Planned)
+- 🔄 **Payment** - Payment processing (Planned)
+- 🔄 **Fulfillment** - Shipping and delivery (Planned)
+
+## Architecture
+
+### Clean Architecture Overview
+
+The project follows Clean Architecture principles with clear separation of concerns across four layers:
+
+```mermaid
+graph TB
+    subgraph API["API Layer (Presentation)"]
+        Endpoints[REST Endpoints]
+        Swagger[Swagger/OpenAPI]
+        DI[Dependency Injection]
+    end
+    
+    subgraph Application["Application Layer"]
+        Commands[Commands]
+        Queries[Queries]
+        Handlers[Command/Query Handlers]
+        Validators[FluentValidation]
+        MediatR[MediatR]
+    end
+    
+    subgraph Domain["Domain Layer (Core)"]
+        Entities[Entities<br/>Product Aggregate]
+        ValueObjects[Value Objects<br/>Price]
+        DomainEvents[Domain Events<br/>ProductAdded, PriceChanged]
+        DomainExceptions[Domain Exceptions]
+        Interfaces[Repository Interfaces]
+    end
+    
+    subgraph Infrastructure["Infrastructure Layer"]
+        DbContext[EF Core DbContext]
+        Repositories[Repository Implementations]
+        Configurations[Entity Configurations]
+        Interceptors[Domain Event Interceptor]
+        Outbox[Outbox Pattern<br/>OutboxMessage, OutboxProcessor]
+        Database[(SQLite Database)]
+    end
+    
+    Endpoints --> MediatR
+    MediatR --> Handlers
+    Handlers --> Entities
+    Handlers --> Repositories
+    Repositories --> Interfaces
+    Repositories --> DbContext
+    DbContext --> Database
+    Interceptors --> Outbox
+    Outbox --> Database
+    
+    style Domain fill:#e1f5ff
+    style Application fill:#fff4e1
+    style Infrastructure fill:#f0e1ff
+    style API fill:#e1ffe8
+```
+
+### Layer Responsibilities
+
+- **Domain Layer**: Entities, Value Objects, Domain Events, Domain Exceptions - Pure business logic with no dependencies
+- **Application Layer**: Use Cases, Commands, Queries, Handlers (CQRS) - Orchestrates domain objects
+- **Infrastructure Layer**: Database, Repository Implementations, Event Processing - External concerns
+- **API Layer**: HTTP Endpoints, Dependency Injection Setup - Entry point for external requests
+
+### Implemented DDD Patterns
+
+### Implementierte DDD Patterns
+- **Aggregate Root**: Product als Aggregate mit invarianten Schutz
+- **Value Objects**: Price als immutable Value Object
+- **Domain Events**: Event-basierte Kommunikation zwischen Aggregates
+- **Factory Method Pattern**: Kontrollierte Entity-Erstellung mit Validation
+- **Repository Pattern**: Abstraktion der Datenzugriffsschicht
+- **Transactional Outbox Pattern**: Garantierte Event-Auslieferung mit Transaktionssicherheit
 
 ### Vertical Slice Architecture
-Jedes Feature ist als eigenständiger "Slice" implementiert:
+
+Each feature is implemented as an independent "slice" with all necessary layers:
+
 ```
 Features/AddProduct/
 ├── AddProductCommand.cs
@@ -43,54 +182,185 @@ Features/AddProduct/
 └── AddProductEndpoint.cs
 ```
 
-## Technologie-Stack
+## Domain Events Processing
+
+The project implements the **Transactional Outbox Pattern** for guaranteed event delivery. This ensures that domain events are never lost, even in case of system failures.
+
+### Event Flow with Outbox Pattern
+
+```mermaid
+sequenceDiagram
+    participant Client
+    participant API as API Endpoint
+    participant Handler as Command Handler
+    participant Product as Product Aggregate
+    participant DbContext as EF Core DbContext
+    participant Interceptor as Domain Event Interceptor
+    participant OutboxTable as Outbox Table
+    participant Database as Database
+    participant Processor as Outbox Processor
+    participant MediatR as MediatR
+    participant EventHandler as Event Handler
+    
+    Client->>API: POST /api/products
+    API->>MediatR: Send AddProductCommand
+    MediatR->>Handler: Handle Command
+    Handler->>Product: Product.Create()
+    Product->>Product: Add Domain Event<br/>(ProductAdded)
+    Handler->>DbContext: Add(product)
+    Handler->>DbContext: SaveChangesAsync()
+    
+    rect rgb(200, 230, 255)
+        Note over DbContext,OutboxTable: Same Database Transaction
+        DbContext->>Interceptor: Before SaveChanges
+        Interceptor->>Product: Get Domain Events
+        Interceptor->>OutboxTable: Save Events as JSON
+        DbContext->>Database: Commit Transaction<br/>(Product + Events)
+    end
+    
+    DbContext-->>Handler: Success
+    Handler-->>API: Product Created
+    API-->>Client: 201 Created
+    
+    rect rgb(255, 230, 200)
+        Note over Processor,EventHandler: Background Processing (every 10s)
+        Processor->>OutboxTable: Query Unprocessed Events
+        OutboxTable-->>Processor: Event List
+        Processor->>Processor: Deserialize Event
+        Processor->>MediatR: Publish Event
+        MediatR->>EventHandler: Handle Event
+        EventHandler->>EventHandler: Business Logic
+        EventHandler-->>MediatR: Success
+        Processor->>OutboxTable: Mark as Processed
+    end
+```
+
+### Key Benefits
+
+- **Atomic Transactions**: Events are persisted in the same database transaction as domain changes
+- **Guaranteed Delivery**: No lost events, even on system failures
+- **Asynchronous Processing**: Events processed by background service without blocking API responses
+- **Retry Mechanism**: Failed events are automatically retried by the outbox processor
+- **Event Sourcing Ready**: Foundation for event-driven architecture
+
+### Domain Events
+
+The following domain events have been identified through Event Storming workshops:
+
+- ✅ `ProductAdded` - New product added to catalog
+- ✅ `PriceChanged` - Product price updated
+- ✅ `StockUpdated` - Inventory level changed
+- ✅ `ProductBecameUnavailable` - Product out of stock
+- 🔄 `ProductDetailsUpdated` - Product information modified (Planned)
+- 🔄 `StockValidationRequested` - Inventory validation triggered (Planned)
+- 🔄 `StockValidationFailed` - Inventory validation failed (Planned)
+
+## Technology Stack
 
 ### Backend (.NET 8)
+
 - **Framework**: ASP.NET Core 8 Web API
 - **Architecture**: Clean Architecture + DDD + Vertical Slice
 - **CQRS**: MediatR für Command/Query Separation
 - **Validation**: FluentValidation für Input-Validierung
 - **ORM**: Entity Framework Core mit SQLite
+- **Domain Events**: MediatR mit Transactional Outbox Pattern
+- **Message Broker**: MassTransit mit RabbitMQ für robuste Event-Verarbeitung
+- **Background Services**: .NET Hosted Services für Event Processing
 - **API Documentation**: Swagger/OpenAPI
 
+### Patterns & Practices
+
+- **Domain-Driven Design**: Aggregates, Value Objects, Domain Events
+- **CQRS**: Command/Query Responsibility Segregation
+- **Event Sourcing Ready**: Domain Events als First-Class Citizens
+- **Transactional Outbox**: Atomare Persistence mit garantierter Event-Auslieferung
+- **Event Bus**: MassTransit für zuverlässige Bounded Context-Kommunikation
+- **EF Core Interceptors**: Automatische Event-Persistierung
+- **Factory Method Pattern**: Kontrollierte Object Creation
+- **Repository Pattern**: Clean Data Access Abstraction
+
 ### Development Tools
-- **Code Quality**: StyleCop für Code-Standards
-- **CI/CD**: GitHub Actions
-- **Code Analysis**: SonarCloud Integration (Geplant)
+
+- **Code Quality**: StyleCop for code standards
+- **CI/CD**: GitHub Actions (Planned)
+- **Code Analysis**: SonarCloud integration (Planned)
 - **Testing**: xUnit, FluentAssertions, Moq
 
 ### Future Integrations
 - **Service Discovery**: .NET Aspire (Geplant)
-- **Event Bus**: RabbitMQ für Domain Events (Geplant)
 - **Caching**: Redis für Performance (Geplant)
 - **Monitoring**: Observability mit Aspire (Geplant)
 
+- **Service Discovery**: .NET Aspire
+- **Event Bus**: RabbitMQ for distributed events
+- **Caching**: Redis for performance optimization
+- **Monitoring**: Observability with Aspire Dashboard
+
+## Project Structure
+
+```
+src/ProductCatalog/
+├── ProductCatalog.Api/              # HTTP Endpoints, Program.cs
+│   ├── Endpoints/                   # Minimal API Endpoints
+│   └── Extensions/                  # Endpoint mapping extensions
+├── ProductCatalog.Application/      # Use Cases, Commands, Queries
+│   ├── Features/                    # Vertical slices
+│   │   ├── AddProduct/
+│   │   ├── GetProducts/
+│   │   └── UpdateProduct/
+│   └── DependencyInjection.cs
+├── ProductCatalog.Domain/           # Core business logic
+│   ├── Common/                      # AggregateRoot, IDomainEvent
+│   ├── Entities/                    # Product Aggregate
+│   ├── Events/                      # Domain Events
+│   ├── Exceptions/                  # Domain-specific Exceptions
+│   └── ValueObjects/                # Price Value Object
+├── ProductCatalog.Infrastructure/   # External concerns
+│   ├── Persistence/
+│   │   ├── Configurations/          # EF Core Entity Configurations
+│   │   ├── Interceptors/            # Domain Event Interceptor
+│   │   ├── Outbox/                  # Outbox Pattern Implementation
+│   │   └── ProductCatalogDbContext.cs
+│   ├── Repositories/                # Repository Implementations
+│   └── DependencyInjection.cs
+└── ProductCatalog.Tests/            # Unit & Integration Tests
+```
+
 ## Quick Start
 
-### Voraussetzungen
+### Prerequisites
+
 - .NET 8 SDK
 - Git
+- RabbitMQ Server (lokal oder via Docker)
 
 ### Installation
-```bash
-# Repository klonen
-git clone https://github.com/[username]/online-shop-ddd.git
-cd online-shop-ddd
 
-# Dependencies installieren
+```bash
+# Clone repository
+git clone https://github.com/lady-logic/OnlineShop.git
+cd OnlineShop
+
+# Restore dependencies
 dotnet restore
 
-# Datenbank erstellen
+# Create database and apply migrations
 cd src/ProductCatalog/ProductCatalog.Api
 dotnet ef database update --project ../ProductCatalog.Infrastructure
 
-# API starten
+# Start API
 dotnet run
+
+# RabbitMQ starten (via Docker)
+docker run -d --name rabbitmq -p 5672:5672 -p 15672:15672 rabbitmq:3-management
 ```
 
-### API testen
-1. Öffne `https://localhost:7xxx/swagger`
-2. Teste den AddProduct Endpoint:
+### Testing the API
+
+1. Open Swagger UI at `https://localhost:7xxx/swagger`
+2. Test the AddProduct endpoint with sample data:
+
 ```json
 {
   "name": "iPhone 15",
@@ -101,42 +371,54 @@ dotnet run
 }
 ```
 
-## Projektstruktur
+3. Verify the product was created with GET endpoint
+4. Check the Outbox table to see persisted events
 
-```
-src/ProductCatalog/
-├── ProductCatalog.Api/          # HTTP Endpoints, Program.cs
-├── ProductCatalog.Application/  # Use Cases, Commands, Queries
-├── ProductCatalog.Domain/       # Entities, Value Objects, Events
-├── ProductCatalog.Infrastructure/ # Database, Repositories
-└── ProductCatalog.Tests/        # Unit & Integration Tests
-```
-
-## Tests
+### Running Tests
 
 ```bash
-# Alle Tests ausführen
+# Run all tests
 dotnet test
 
-# Tests mit Coverage
+# Run with code coverage
 dotnet test --collect:"XPlat Code Coverage"
+
+# Run specific test project
+dotnet test src/ProductCatalog/ProductCatalog.Tests
 ```
 
-## Lernziele
+## API Documentation
 
-Dieses Projekt dient dem Erlernen von:
-- ✅ Domain Driven Design (DDD) Prinzipien
-- ✅ Clean Architecture Implementierung
-- ✅ CQRS Pattern mit MediatR
-- ✅ Event Storming als Design-Methode
+The API is fully documented using Swagger/OpenAPI. All endpoints include:
+- Detailed descriptions
+- Request/response examples
+- Validation rules
+- HTTP status codes
+
+Access the interactive documentation at `/swagger` when running the application.
+
+## Learning Objectives
+
+This project serves as a practical implementation for learning:
+
+- ✅ Domain Driven Design (DDD) principles and tactical patterns
+- ✅ Clean Architecture implementation
+- ✅ CQRS Pattern with MediatR
+- ✅ Event Storming as a design methodology
 - ✅ Vertical Slice Architecture
-- 🔄 Event-Driven Architecture (in Entwicklung)
+- ✅ Transactional Outbox Pattern
+- ✅ Domain Events Processing
+- ✅ Factory Method Pattern
+- ✅ EF Core Interceptors
+- ✅ Event-Driven Architecture mit MassTransit/RabbitMQ
 - 🔄 Microservices Communication (geplant)
 - 🔄 .NET Aspire für Service Orchestration (geplant)
 
+## Acknowledgments
 
-## Status
+Built with guidance from DDD community resources and Event Storming methodologies.
 
-**Aktueller Stand**: Product Catalog Bounded Context begonnen
-**Nächste Schritte**: Product Catalog Bounded Context weiter ausbauen
+**Aktueller Stand**: Product Catalog Bounded Context mit Event Bus-Integration
+**Nächste Schritte**: Shopping Basket Bounded Context implementieren
 
+**Note**: This is an educational project focused on learning DDD, Clean Architecture, and modern .NET development practices. It is continuously evolving as new concepts are explored and implemented.

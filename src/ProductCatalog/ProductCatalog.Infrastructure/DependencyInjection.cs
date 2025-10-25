@@ -1,8 +1,14 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using MassTransit;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using ProductCatalog.Domain.Common;
 using ProductCatalog.Domain.Repositories;
+using ProductCatalog.Infrastructure.EventBus;
 using ProductCatalog.Infrastructure.Persistence;
+using ProductCatalog.Infrastructure.Persistence.Interceptors;
+using ProductCatalog.Infrastructure.Persistence.Outbox;
 using ProductCatalog.Infrastructure.Persistence.Repositories;
 
 namespace ProductCatalog.Infrastructure;
@@ -20,12 +26,47 @@ public static class DependencyInjection
     /// <returns>The configured service collection.</returns>
     public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
-        // SQLite Database
-        services.AddDbContext<ProductCatalogDbContext>(options =>
-            options.UseSqlite(configuration.GetConnectionString("DefaultConnection") ?? "Data Source=productcatalog.db"));
+        // Interceptor als Service registrieren
+        services.AddScoped<DomainEventInterceptor>();
+
+        // DbContext mit Interceptor
+        services.AddDbContext<ProductCatalogDbContext>((serviceProvider, options) =>
+        {
+            var connectionString = configuration.GetConnectionString("DefaultConnection");
+            options.UseSqlite(connectionString);
+
+            // Interceptor hinzufügen
+            options.AddInterceptors(
+                serviceProvider.GetRequiredService<DomainEventInterceptor>());
+        });
+
+        // Outbox Processor als Background Service registrieren
+        services.AddHostedService<OutboxProcessor>();
 
         // Repositories
         services.AddScoped<IProductRepository, ProductRepository>();
+
+        // MassTransit hinzufügen
+        services.AddMassTransit(x =>
+        {
+            x.UsingRabbitMq((context, cfg) =>
+            {
+                var host = configuration["RabbitMQ:HostName"] ?? "localhost";
+                var username = configuration["RabbitMQ:Username"] ?? "guest";
+                var password = configuration["RabbitMQ:Password"] ?? "guest";
+
+                cfg.Host(host, h =>
+                {
+                    h.Username(username);
+                    h.Password(password);
+                });
+
+                cfg.ConfigureEndpoints(context);
+            });
+        });
+
+        // IMessageBroker mit der MassTransit-Implementierung registrieren
+        services.AddSingleton<IMessageBroker, MassTransitMessageBroker>();
 
         return services;
     }

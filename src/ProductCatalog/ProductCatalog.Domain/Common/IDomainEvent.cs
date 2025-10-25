@@ -1,9 +1,11 @@
-﻿namespace ProductCatalog.Domain.Common;
+﻿using MediatR;
+
+namespace ProductCatalog.Domain.Common;
 
 /// <summary>
 /// Represents a domain event that occurred within the domain model.
 /// </summary>
-public interface IDomainEvent
+public interface IDomainEvent : INotification
 {
     /// <summary>
     /// Gets the unique identifier of the domain event.

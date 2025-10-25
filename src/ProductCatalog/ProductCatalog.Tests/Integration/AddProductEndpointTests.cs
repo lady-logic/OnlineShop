@@ -17,12 +17,20 @@ public class AddProductEndpointTests : IClassFixture<ProductCatalogWebApplicatio
     private readonly ProductCatalogWebApplicationFactory _factory;
     private readonly HttpClient _client;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="AddProductEndpointTests"/> class.
+    /// </summary>
+    /// <param name="factory">The web application factory for the product catalog.</param>
     public AddProductEndpointTests(ProductCatalogWebApplicationFactory factory)
     {
         _factory = factory;
         _client = _factory.CreateClient();
     }
 
+    /// <summary>
+    /// Tests that adding a product with valid data returns a Created (201) response and a valid product ID.
+    /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
     [Fact]
     public async Task AddProduct_WithValidData_ShouldReturnCreated()
     {
@@ -46,7 +54,11 @@ public class AddProductEndpointTests : IClassFixture<ProductCatalogWebApplicatio
         idElement.GetString().Should().NotBeNullOrEmpty();
     }
 
-    [Fact]
+    /// <summary>
+    /// Tests that adding a product with invalid data returns a BadRequest (400) response.
+    /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
+    [Fact(DisplayName = "AddProduct WithInvalidData ShouldReturnBadRequest")]
     public async Task AddProduct_WithInvalidData_ShouldReturnBadRequest()
     {
         // Arrange
@@ -64,6 +76,10 @@ public class AddProductEndpointTests : IClassFixture<ProductCatalogWebApplicatio
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
+    /// <summary>
+    /// Tests that adding a product with missing required fields returns a BadRequest (400) response.
+    /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous test operation.</returns>
     [Fact]
     public async Task AddProduct_WithMissingRequiredFields_ShouldReturnBadRequest()
     {
@@ -80,6 +96,15 @@ public class AddProductEndpointTests : IClassFixture<ProductCatalogWebApplicatio
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
+    /// <summary>
+    /// Tests that adding a product with invalid field values returns a BadRequest (400) response.
+    /// </summary>
+    /// <param name="name">The product name to test.</param>
+    /// <param name="description">The product description to test.</param>
+    /// <param name="priceAmount">The product price amount to test.</param>
+    /// <param name="currency">The product currency to test.</param>
+    /// <param name="initialStock">The initial stock value to test.</param>
+    /// <returns>A <see cref="Task"/> representing the asynchronous test operation.</returns>
     [Theory]
     [InlineData("", "Description", 99.99, "EUR", 10)] // Empty name
     [InlineData("Product", "", 99.99, "EUR", 10)] // Empty description
@@ -99,6 +124,10 @@ public class AddProductEndpointTests : IClassFixture<ProductCatalogWebApplicatio
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
+    /// <summary>
+    /// Tests that adding a product with valid data creates the product in the database and returns a Created (201) response.
+    /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous test operation.</returns>
     [Fact]
     public async Task AddProduct_WithValidData_ShouldCreateProductInDatabase()
     {
