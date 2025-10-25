@@ -8,15 +8,15 @@
 ![Clean Architecture](https://img.shields.io/badge/Architecture-Clean-green)
 ![License](https://img.shields.io/badge/License-MIT-green)
 
-> A professional implementation of Domain-Driven Design principles with Clean Architecture, CQRS, and Event-Driven Architecture patterns using .NET 8
+> Eine professionelle Implementierung von Domain-Driven Design Prinzipien mit Clean Architecture, CQRS und Event-Driven Architecture in .NET 8
 
-## Project Overview
+## Projektübersicht
 
-This is a continuously growing learning project implementing a complete online shop using Domain-Driven Design and Clean Architecture. Currently, the Product Catalog Bounded Context is implemented, with additional contexts planned incrementally.
+Dieses kontinuierlich wachsende Lernprojekt implementiert einen vollständigen Online-Shop mit Domain-Driven Design und Clean Architecture. Aktuell ist der Product Catalog Bounded Context implementiert, weitere Kontexte folgen schrittweise.
 
 ## Event Storming & Domain Design
 
-This project was developed using Event Storming methodology to identify domain events, commands, and aggregates:
+Dieses Projekt wurde mit Event Storming Methodik entwickelt, um Domain Events, Commands und Aggregates zu identifizieren:
 
 ```mermaid
 graph LR
@@ -84,25 +84,25 @@ graph LR
     style Legend fill:#FFFFFF,stroke:#BDC3C7,stroke-width:1px
 ```
 
-The Event Storming session identified the following key elements:
-- **Commands**: User actions that trigger domain changes
-- **Domain Events**: Business facts that have occurred
-- **Aggregate**: Product as the main domain object
-- **Value Objects**: Price for encapsulated business logic
+Die Event Storming Session identifizierte folgende Schlüsselelemente:
+- **Commands**: Benutzeraktionen, die Domain-Änderungen auslösen
+- **Domain Events**: Geschäftsfakten, die eingetreten sind
+- **Aggregate**: Product als Haupt-Domainenobjekt
+- **Value Objects**: Price für gekapselte Geschäftslogik
 
 ### Bounded Contexts Roadmap
 
-- ✅ **Product Catalog** - Product management (Currently implemented)
-- 🔄 **Shopping Basket** - Shopping cart functionality (Planned)
-- 🔄 **Checkout Process** - Order processing (Planned)
-- 🔄 **Payment** - Payment processing (Planned)
-- 🔄 **Fulfillment** - Shipping and delivery (Planned)
+- ✅ **Product Catalog** - Produktverwaltung (Aktuell implementiert)
+- 🔄 **Shopping Basket** - Warenkorb-Funktionalität (Geplant)
+- 🔄 **Checkout Process** - Bestellabwicklung (Geplant)
+- 🔄 **Payment** - Zahlungsabwicklung (Geplant)
+- 🔄 **Fulfillment** - Versand und Lieferung (Geplant)
 
 ## Architecture
 
 ### Clean Architecture Overview
 
-The project follows Clean Architecture principles with clear separation of concerns across four layers:
+Das Projekt folgt Clean Architecture Prinzipien mit klarer Trennung der Zuständigkeiten über vier Schichten:
 
 ```mermaid
 graph TB
@@ -155,14 +155,13 @@ graph TB
 
 ### Layer Responsibilities
 
-- **Domain Layer**: Entities, Value Objects, Domain Events, Domain Exceptions - Pure business logic with no dependencies
-- **Application Layer**: Use Cases, Commands, Queries, Handlers (CQRS) - Orchestrates domain objects
-- **Infrastructure Layer**: Database, Repository Implementations, Event Processing - External concerns
-- **API Layer**: HTTP Endpoints, Dependency Injection Setup - Entry point for external requests
+- **Domain Layer**: Entities, Value Objects, Domain Events, Domain Exceptions - Reine Geschäftslogik ohne Abhängigkeiten
+- **Application Layer**: Use Cases, Commands, Queries, Handler (CQRS) - Orchestrierung von Domänenobjekten
+- **Infrastructure Layer**: Datenbank, Repository-Implementierungen, Event-Verarbeitung - Externe Belange
+- **API Layer**: HTTP-Endpunkte, Dependency Injection Setup - Eingangspunkt für externe Anfragen
 
-### Implemented DDD Patterns
+### Implementierte DDD-Patterns
 
-### Implementierte DDD Patterns
 - **Aggregate Root**: Product als Aggregate mit invarianten Schutz
 - **Value Objects**: Price als immutable Value Object
 - **Domain Events**: Event-basierte Kommunikation zwischen Aggregates
@@ -172,7 +171,7 @@ graph TB
 
 ### Vertical Slice Architecture
 
-Each feature is implemented as an independent "slice" with all necessary layers:
+Jedes Feature wird als unabhängiger "Slice" mit allen notwendigen Schichten implementiert:
 
 ```
 Features/AddProduct/
@@ -182,11 +181,11 @@ Features/AddProduct/
 └── AddProductEndpoint.cs
 ```
 
-## Domain Events Processing
+## Domain Events Verarbeitung
 
-The project implements the **Transactional Outbox Pattern** for guaranteed event delivery. This ensures that domain events are never lost, even in case of system failures.
+Das Projekt implementiert das Transactional Outbox Pattern für garantierte Event-Zustellung. Dies stellt sicher, dass Domain Events niemals verloren gehen, selbst bei Systemausfällen.
 
-### Event Flow with Outbox Pattern
+### Event-Fluss mit Outbox Pattern
 
 ```mermaid
 sequenceDiagram
@@ -235,69 +234,65 @@ sequenceDiagram
     end
 ```
 
-### Key Benefits
+### Hauptvorteile
 
-- **Atomic Transactions**: Events are persisted in the same database transaction as domain changes
-- **Guaranteed Delivery**: No lost events, even on system failures
-- **Asynchronous Processing**: Events processed by background service without blocking API responses
-- **Retry Mechanism**: Failed events are automatically retried by the outbox processor
-- **Event Sourcing Ready**: Foundation for event-driven architecture
+- **Atomic Transactions**: Events werden in derselben Datenbanktransaktion wie Domainänderungen persistiert
+- **Guaranteed Delivery**: Keine verlorenen Events, selbst bei Systemausfällen
+- **Asynchronous Processing**: Events werden durch Hintergrunddienste verarbeitet ohne API-Antworten zu blockieren
+- **Retry Mechanism**: Fehlgeschlagene Events werden automatisch vom Outbox-Prozessor wiederholt
+- **Event Sourcing Ready**: Grundlage für ereignisgesteuerte Architektur
 
 ### Domain Events
 
-The following domain events have been identified through Event Storming workshops:
+Folgende Domain Events wurden durch Event Storming Workshops identifiziert:
 
-- ✅ `ProductAdded` - New product added to catalog
-- ✅ `PriceChanged` - Product price updated
-- ✅ `StockUpdated` - Inventory level changed
-- ✅ `ProductBecameUnavailable` - Product out of stock
-- 🔄 `ProductDetailsUpdated` - Product information modified (Planned)
-- 🔄 `StockValidationRequested` - Inventory validation triggered (Planned)
-- 🔄 `StockValidationFailed` - Inventory validation failed (Planned)
+- ✅ `ProductAdded` - Neues Produkt zum Katalog hinzugefügt
+- ✅ `PriceChanged` - Produktpreis aktualisiert
+- ✅ `StockUpdated` - Bestandsmenge geändert
+- ✅ `ProductBecameUnavailable` - Produkt nicht mehr verfügbar
+- 🔄 `ProductDetailsUpdated` - Produktinformationen geändert (Geplant)
+- 🔄 `StockValidationRequested` - Bestandsvalidierung ausgelöst (Geplant)
+- 🔄 `StockValidationFailed` - Bestandsvalidierung fehlgeschlagen (Geplant)
 
-## Technology Stack
+## Technologie-Stack
 
 ### Backend (.NET 8)
 
 - **Framework**: ASP.NET Core 8 Web API
-- **Architecture**: Clean Architecture + DDD + Vertical Slice
+- **Architektur**: Clean Architecture + DDD + Vertical Slice
 - **CQRS**: MediatR für Command/Query Separation
-- **Validation**: FluentValidation für Input-Validierung
+- **Validierung**: FluentValidation für Input-Validierung
 - **ORM**: Entity Framework Core mit SQLite
 - **Domain Events**: MediatR mit Transactional Outbox Pattern
 - **Message Broker**: MassTransit mit RabbitMQ für robuste Event-Verarbeitung
 - **Background Services**: .NET Hosted Services für Event Processing
 - **API Documentation**: Swagger/OpenAPI
+- **Observability**: Serilog, OpenTelemetry, Prometheus, Grafan
 
 ### Patterns & Practices
 
 - **Domain-Driven Design**: Aggregates, Value Objects, Domain Events
 - **CQRS**: Command/Query Responsibility Segregation
 - **Event Sourcing Ready**: Domain Events als First-Class Citizens
-- **Transactional Outbox**: Atomare Persistence mit garantierter Event-Auslieferung
+- **Transactional Outbox**: Atomare Persistenz mit garantierter Event-Auslieferung
 - **Event Bus**: MassTransit für zuverlässige Bounded Context-Kommunikation
 - **EF Core Interceptors**: Automatische Event-Persistierung
-- **Factory Method Pattern**: Kontrollierte Object Creation
-- **Repository Pattern**: Clean Data Access Abstraction
+- **Factory Method Pattern**: Kontrollierte Objekterstellung
+- **Repository Pattern**: Saubere Datenabstraktion
 
-### Development Tools
+### Entwicklungstools
 
-- **Code Quality**: StyleCop for code standards
-- **CI/CD**: GitHub Actions (Planned)
-- **Code Analysis**: SonarCloud integration (Planned)
+- **Code Quality**: StyleCop für Code-Standards
+- **CI/CD**: GitHub Actions (Geplant)
+- **Code Analysis**: SonarCloud Integration (Geplant)
 - **Testing**: xUnit, FluentAssertions, Moq
 
-### Future Integrations
+### Zukünftige Integrationen
 - **Service Discovery**: .NET Aspire (Geplant)
 - **Caching**: Redis für Performance (Geplant)
 - **Monitoring**: Observability mit Aspire (Geplant)
 
-- **Service Discovery**: .NET Aspire
-- **Event Bus**: RabbitMQ for distributed events
-- **Caching**: Redis for performance optimization
-- **Monitoring**: Observability with Aspire Dashboard
-
-## Project Structure
+## Projektstruktur
 
 ```
 src/ProductCatalog/
@@ -327,39 +322,47 @@ src/ProductCatalog/
 └── ProductCatalog.Tests/            # Unit & Integration Tests
 ```
 
-## Quick Start
+## Schnellstart
 
-### Prerequisites
+### Voraussetzungen
 
 - .NET 8 SDK
 - Git
-- RabbitMQ Server (lokal oder via Docker)
+- Docker (für Container und Infrastruktur)
 
 ### Installation
 
+### Lokale Entwicklung starten
 ```bash
-# Clone repository
+# Repository klonen
 git clone https://github.com/lady-logic/OnlineShop.git
 cd OnlineShop
 
-# Restore dependencies
+# Abhängigkeiten wiederherstellen
 dotnet restore
 
-# Create database and apply migrations
+# Datenbank erstellen und Migrationen anwenden
 cd src/ProductCatalog/ProductCatalog.Api
 dotnet ef database update --project ../ProductCatalog.Infrastructure
 
-# Start API
+# API starten
 dotnet run
-
-# RabbitMQ starten (via Docker)
-docker run -d --name rabbitmq -p 5672:5672 -p 15672:15672 rabbitmq:3-management
 ```
 
-### Testing the API
+### Mit Docker starten
+```bash
+# Repository klonen
+git clone https://github.com/lady-logic/OnlineShop.git
+cd OnlineShop
 
-1. Open Swagger UI at `https://localhost:7xxx/swagger`
-2. Test the AddProduct endpoint with sample data:
+# Docker Container starten
+docker-compose up -d
+```
+
+### API testen
+
+1. Swagger UI unter `http://localhost:8080/swagger` öffnen
+2. Den AddProduct-Endpunkt mit Beispieldaten testen:
 
 ```json
 {
@@ -371,10 +374,17 @@ docker run -d --name rabbitmq -p 5672:5672 -p 15672:15672 rabbitmq:3-management
 }
 ```
 
-3. Verify the product was created with GET endpoint
-4. Check the Outbox table to see persisted events
+3. Überprüfen, ob das Produkt mit dem GET-Endpunkt erstellt wurde
+4. Die Outbox-Tabelle überprüfen, um persistierte Events zu sehen
 
-### Running Tests
+### Services erreichen
+
+- API & Swagger: http://localhost:8080/swagger
+- RabbitMQ Management: http://localhost:15672 (Benutzername: guest, Passwort: guest)
+- Prometheus: http://localhost:9090
+- Grafana: http://localhost:3000 (Benutzername: admin, Passwort: password)
+
+### Tests ausführen
 
 ```bash
 # Run all tests
@@ -387,38 +397,62 @@ dotnet test --collect:"XPlat Code Coverage"
 dotnet test src/ProductCatalog/ProductCatalog.Tests
 ```
 
-## API Documentation
+## API-Dokumentation
 
-The API is fully documented using Swagger/OpenAPI. All endpoints include:
-- Detailed descriptions
-- Request/response examples
-- Validation rules
-- HTTP status codes
+Die API ist vollständig mit Swagger/OpenAPI dokumentiert. Alle Endpunkte enthalten:
+- Detaillierte Beschreibungen
+- Request/Response-Beispiele
+- Validierungsregeln
+- HTTP-Statuscodes
 
-Access the interactive documentation at `/swagger` when running the application.
+Zugriff auf die interaktive Dokumentation unter `/swagger` beim Ausführen der Anwendung.
 
-## Learning Objectives
+## Observability
+Die Anwendung implementiert moderne Observability-Praktiken:
 
-This project serves as a practical implementation for learning:
+### Strukturiertes Logging mit Serilog
 
-- ✅ Domain Driven Design (DDD) principles and tactical patterns
-- ✅ Clean Architecture implementation
-- ✅ CQRS Pattern with MediatR
-- ✅ Event Storming as a design methodology
+JSON-formatierte Logs für bessere Suchbarkeit und Analyse
+Automatische Anreicherung mit Kontextinformationen (Maschinennamen, Thread-IDs, etc.)
+Ausgabe in Konsole und Dateisystem
+
+### Metriken mit OpenTelemetry und Prometheus
+
+Automatische Erfassung von ASP.NET Core und HTTP-Client-Metriken
+Benutzerdefinierte Domain-Event-Metriken (Verarbeitete Events, Fehlerrate, Verarbeitungszeit)
+Speicherung in Prometheus Zeitreihen-Datenbank
+
+### Tracing mit OpenTelemetry
+
+Verteiltes Tracing über Service-Grenzen hinweg
+Automatische Instrumentierung von ASP.NET Core und Entity Framework Core
+Korrelation zwischen Logs, Metriken und Traces
+
+### Visualisierung mit Grafana
+
+Vorkonfigurierte Dashboards für API-Gesundheit und Domain-Event-Monitoring
+Echtzeit-Überwachung der Anwendungsleistung
+Anpassbare Alarme für wichtige Metriken
+
+## Lernziele
+
+Dieses Projekt dient der praktischen Umsetzung für das Erlernen von:
+
+- ✅ Domain Driven Design (DDD) Prinzipien und taktischen Patterns
+- ✅ Clean Architecture Implementierung
+- ✅ CQRS Pattern mit MediatR
+- ✅ Event Storming als Design-Methodik
 - ✅ Vertical Slice Architecture
 - ✅ Transactional Outbox Pattern
-- ✅ Domain Events Processing
+- ✅ Domain Events Verarbeitung
 - ✅ Factory Method Pattern
 - ✅ EF Core Interceptors
 - ✅ Event-Driven Architecture mit MassTransit/RabbitMQ
-- 🔄 Microservices Communication (geplant)
-- 🔄 .NET Aspire für Service Orchestration (geplant)
+- ✅ Moderne Observability-Praktiken (Serilog, OpenTelemetry)
+- 🔄 Microservices-Kommunikation (geplant)
+- 🔄 .NET Aspire für Service-Orchestrierung (geplant)
 
-## Acknowledgments
-
-Built with guidance from DDD community resources and Event Storming methodologies.
-
-**Aktueller Stand**: Product Catalog Bounded Context mit Event Bus-Integration
+**Aktueller Stand**: Product Catalog Bounded Context mit Event Bus-Integration und vollständiger Observability
 **Nächste Schritte**: Shopping Basket Bounded Context implementieren
 
-**Note**: This is an educational project focused on learning DDD, Clean Architecture, and modern .NET development practices. It is continuously evolving as new concepts are explored and implemented.
+**Hinweis**: Dies ist ein Lernprojekt zum Vertiefen von DDD, Clean Architecture und modernen .NET-Entwicklungspraktiken. Es entwickelt sich kontinuierlich weiter, während neue Konzepte erkundet und implementiert werden.

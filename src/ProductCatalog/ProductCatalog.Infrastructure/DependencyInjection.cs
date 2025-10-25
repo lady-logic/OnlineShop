@@ -66,7 +66,7 @@ public static class DependencyInjection
         });
 
         // IMessageBroker mit der MassTransit-Implementierung registrieren
-        services.AddSingleton<IMessageBroker, MassTransitMessageBroker>();
+        services.AddScoped<IMessageBroker, MassTransitMessageBroker>();
 
         return services;
     }
