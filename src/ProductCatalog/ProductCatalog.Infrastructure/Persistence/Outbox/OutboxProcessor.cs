@@ -1,4 +1,5 @@
-﻿using System.Text.Json;
+﻿using System.Diagnostics.Metrics;
+using System.Text.Json;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -11,11 +12,37 @@ namespace ProductCatalog.Infrastructure.Persistence.Outbox;
 /// <summary>
 /// Background service that processes domain events from the outbox table.
 /// </summary>
-public class OutboxProcessor(IServiceProvider serviceProvider, ILogger<OutboxProcessor> logger, IMessageBroker messageBroker) : BackgroundService
+public class OutboxProcessor : BackgroundService
 {
-    private readonly IServiceProvider _serviceProvider = serviceProvider;
-    private readonly ILogger<OutboxProcessor> _logger = logger;
-    private readonly IMessageBroker _messageBroker = messageBroker;
+    private readonly IServiceProvider _serviceProvider;
+    private readonly ILogger<OutboxProcessor> _logger;
+
+    private readonly Meter _meter;
+    private readonly Counter<long> _processedEventsCounter;
+    private readonly Counter<long> _failedEventsCounter;
+    private readonly Histogram<double> _eventProcessingTime;
+
+    public OutboxProcessor(
+        IServiceProvider serviceProvider,
+        ILogger<OutboxProcessor> logger)
+    {
+        _serviceProvider = serviceProvider;
+        _logger = logger;
+
+        _meter = new Meter("ProductCatalog.DomainEvents");
+        _processedEventsCounter = _meter.CreateCounter<long>(
+            "domain_events_processed",
+            description: "Number of domain events processed");
+
+        _failedEventsCounter = _meter.CreateCounter<long>(
+            "domain_events_failed",
+            description: "Number of domain events failed processing");
+
+        _eventProcessingTime = _meter.CreateHistogram<double>(
+            "domain_event_processing_seconds",
+            unit: "s",
+            description: "Time taken to process domain events");
+    }
 
     /// <summary>
     /// Executes the background service logic for processing outbox messages.
@@ -53,6 +80,7 @@ public class OutboxProcessor(IServiceProvider serviceProvider, ILogger<OutboxPro
         using var scope = _serviceProvider.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<ProductCatalogDbContext>();
         var mediator = scope.ServiceProvider.GetRequiredService<IMediator>();
+        var messageBroker = scope.ServiceProvider.GetRequiredService<IMessageBroker>();
 
         // Hole unverarbeitete Messages
         var messages = await dbContext.OutboxMessages
@@ -66,11 +94,17 @@ public class OutboxProcessor(IServiceProvider serviceProvider, ILogger<OutboxPro
             return;
         }
 
-        _logger.LogInformation("Processing {Count} outbox messages", messages.Count);
+        _logger.LogInformation("Processing outbox messages {@MessageDetails}", new
+        {
+            Count = messages.Count,
+            FirstMessageId = messages.FirstOrDefault()?.Id,
+            OldestMessageTime = messages.Min(m => m.OccurredOnUtc)
+        });
 
         foreach (var message in messages)
         {
             var transaction = await dbContext.Database.BeginTransactionAsync(cancellationToken);
+            var stopwatch = System.Diagnostics.Stopwatch.StartNew();
 
             try
             {
@@ -81,6 +115,8 @@ public class OutboxProcessor(IServiceProvider serviceProvider, ILogger<OutboxPro
                     _logger.LogWarning("Could not find type {Type}", message.Type);
                     message.Error = $"Type not found: {message.Type}";
                     message.ProcessedOnUtc = DateTime.UtcNow;
+
+                    _failedEventsCounter.Add(1, new KeyValuePair<string, object?>("reason", "type_not_found"));
                     continue;
                 }
 
@@ -90,6 +126,8 @@ public class OutboxProcessor(IServiceProvider serviceProvider, ILogger<OutboxPro
                     _logger.LogWarning("Could not deserialize event {Type}", message.Type);
                     message.Error = "Deserialization failed";
                     message.ProcessedOnUtc = DateTime.UtcNow;
+
+                    _failedEventsCounter.Add(1, new KeyValuePair<string, object?>("reason", "deserialization_failed"));
                     continue;
                 }
 
@@ -101,9 +139,18 @@ public class OutboxProcessor(IServiceProvider serviceProvider, ILogger<OutboxPro
 
                 // Event publishen
                 await mediator.Publish(domainEvent, cancellationToken);
-                await _messageBroker.PublishAsync(domainEvent);
+                await messageBroker.PublishAsync(domainEvent);
 
                 await transaction.CommitAsync(cancellationToken);
+
+                stopwatch.Stop();
+                _eventProcessingTime.Record(
+                    stopwatch.Elapsed.TotalSeconds,
+                    new KeyValuePair<string, object?>("event_type", message.Type));
+
+                _processedEventsCounter.Add(
+                    1,
+                    new KeyValuePair<string, object?>("event_type", message.Type));
 
                 _logger.LogInformation(
                     "Successfully processed outbox message {Id} of type {Type}",
@@ -112,8 +159,13 @@ public class OutboxProcessor(IServiceProvider serviceProvider, ILogger<OutboxPro
             }
             catch (Exception ex)
             {
+                stopwatch.Stop();
                 _logger.LogError(ex, "Error processing outbox message {Id}", message.Id);
                 message.Error = ex.Message;
+
+                _failedEventsCounter.Add(
+                    1,
+                    new KeyValuePair<string, object?>("event_type", message.Type ?? "unknown"));
 
                 await dbContext.SaveChangesAsync(cancellationToken);
             }
