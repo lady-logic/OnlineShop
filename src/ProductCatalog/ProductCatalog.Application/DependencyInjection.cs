@@ -21,7 +21,8 @@ public static class DependencyInjection
         var assembly = Assembly.GetExecutingAssembly();
 
         // Neue Syntax für MediatR 12.0+
-        services.AddMediatR(cfg => {
+        services.AddMediatR(cfg =>
+        {
             cfg.RegisterServicesFromAssembly(assembly);
         });
 

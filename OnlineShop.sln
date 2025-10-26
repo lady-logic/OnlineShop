@@ -33,8 +33,18 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		docker-compose.yml = docker-compose.yml
 		Dockerfile = Dockerfile
 		prometheus.yml = prometheus.yml
+		promtail-config.yaml = promtail-config.yaml
 		README.md = README.md
 		styleguide.ruleset = styleguide.ruleset
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "infra", "infra", "{A1D154B9-64F8-44BD-A8F9-C8ED79AF6B8F}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "grafana", "grafana", "{40EB81CE-A78D-4856-8CDB-F24F1CF1EC3E}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "dashboards", "dashboards", "{4C778E0E-C371-41C6-B894-A1C0CCE8F589}"
+	ProjectSection(SolutionItems) = preProject
+		productcatalog-dashboard.json = productcatalog-dashboard.json
 	EndProjectSection
 EndProject
 Global
@@ -79,6 +89,8 @@ Global
 		{379262EA-407B-4588-9346-438A20073E3D} = {F8D6C0A6-B8AF-4014-9922-0F2F027FC8A9}
 		{3F979546-B7DE-9508-562D-20195CEF8046} = {F8D6C0A6-B8AF-4014-9922-0F2F027FC8A9}
 		{C8B18708-BD5F-EA2A-717E-E7E00B68A09F} = {F8D6C0A6-B8AF-4014-9922-0F2F027FC8A9}
+		{40EB81CE-A78D-4856-8CDB-F24F1CF1EC3E} = {A1D154B9-64F8-44BD-A8F9-C8ED79AF6B8F}
+		{4C778E0E-C371-41C6-B894-A1C0CCE8F589} = {40EB81CE-A78D-4856-8CDB-F24F1CF1EC3E}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {2C7F5FD0-B2B3-4535-9472-A82F0E03D060}

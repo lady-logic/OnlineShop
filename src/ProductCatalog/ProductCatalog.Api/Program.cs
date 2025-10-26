@@ -1,3 +1,4 @@
+using System.Reflection;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
@@ -7,9 +8,9 @@ using ProductCatalog.Infrastructure;
 using ProductCatalog.Infrastructure.Persistence;
 using Serilog;
 using Serilog.Events;
-using System.Reflection;
+using Serilog.Sinks.Grafana.Loki;
 
-// Serilog konfigurieren 
+// Serilog konfigurieren
 Log.Logger = new LoggerConfiguration()
     .MinimumLevel.Debug()
     .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
@@ -19,6 +20,11 @@ Log.Logger = new LoggerConfiguration()
     .Enrich.WithThreadId()
     .WriteTo.Console(outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj} {Properties:j}{NewLine}{Exception}")
     .WriteTo.File("logs/log-.txt", rollingInterval: RollingInterval.Day)
+    .WriteTo.GrafanaLoki(
+        "http://loki:3100",
+        labels: new[] { new LokiLabel { Key = "app", Value = "productcatalog-api" } },
+        credentials: null,
+        queueLimit: 10000)
     .CreateLogger();
 
 try
@@ -49,6 +55,7 @@ try
         {
             metrics
                 .SetResourceBuilder(resourceBuilder)
+                .AddMeter("ProductCatalog.DomainEvents")
                 .AddAspNetCoreInstrumentation()
                 .AddHttpClientInstrumentation()
                 .AddRuntimeInstrumentation()

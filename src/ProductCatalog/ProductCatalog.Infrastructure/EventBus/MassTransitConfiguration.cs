@@ -5,8 +5,17 @@ using ProductCatalog.Domain.Common;
 
 namespace ProductCatalog.Infrastructure.EventBus;
 
+/// <summary>
+/// Provides extension methods for configuring MassTransit and RabbitMQ event bus services.
+/// </summary>
 public static class MassTransitConfiguration
 {
+    /// <summary>
+    /// Adds MassTransit and RabbitMQ event bus services to the specified <see cref="IServiceCollection"/>.
+    /// </summary>
+    /// <param name="services">The service collection to add the event bus services to.</param>
+    /// <param name="configuration">The application configuration containing RabbitMQ settings.</param>
+    /// <returns>The updated <see cref="IServiceCollection"/>.</returns>
     public static IServiceCollection AddEventBusServices(
         this IServiceCollection services, IConfiguration configuration)
     {

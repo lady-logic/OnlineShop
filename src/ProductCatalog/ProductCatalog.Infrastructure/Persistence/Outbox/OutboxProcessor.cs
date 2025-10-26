@@ -1,41 +1,48 @@
-﻿using System.Text.Json;
+﻿using System.Diagnostics.Metrics;
+using System.Text.Json;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using ProductCatalog.Domain.Common;
-using System.Diagnostics.Metrics;
 
 namespace ProductCatalog.Infrastructure.Persistence.Outbox;
 
 /// <summary>
 /// Background service that processes domain events from the outbox table.
 /// </summary>
-public class OutboxProcessor(
-    IServiceProvider serviceProvider,
-    ILogger<OutboxProcessor> logger) : BackgroundService
+public class OutboxProcessor : BackgroundService
 {
-    private readonly IServiceProvider _serviceProvider = serviceProvider;
-    private readonly ILogger<OutboxProcessor> _logger = logger;
+    private readonly IServiceProvider _serviceProvider;
+    private readonly ILogger<OutboxProcessor> _logger;
 
-    // Meter initialisieren
-    private readonly Meter _meter = new("ProductCatalog.DomainEvents");
-    private readonly Counter<long> _processedEventsCounter =
-        new Meter("ProductCatalog.DomainEvents").CreateCounter<long>(
+    private readonly Meter _meter;
+    private readonly Counter<long> _processedEventsCounter;
+    private readonly Counter<long> _failedEventsCounter;
+    private readonly Histogram<double> _eventProcessingTime;
+
+    public OutboxProcessor(
+        IServiceProvider serviceProvider,
+        ILogger<OutboxProcessor> logger)
+    {
+        _serviceProvider = serviceProvider;
+        _logger = logger;
+
+        _meter = new Meter("ProductCatalog.DomainEvents");
+        _processedEventsCounter = _meter.CreateCounter<long>(
             "domain_events_processed",
             description: "Number of domain events processed");
 
-    private readonly Counter<long> _failedEventsCounter =
-        new Meter("ProductCatalog.DomainEvents").CreateCounter<long>(
+        _failedEventsCounter = _meter.CreateCounter<long>(
             "domain_events_failed",
             description: "Number of domain events failed processing");
 
-    private readonly Histogram<double> _eventProcessingTime =
-        new Meter("ProductCatalog.DomainEvents").CreateHistogram<double>(
+        _eventProcessingTime = _meter.CreateHistogram<double>(
             "domain_event_processing_seconds",
             unit: "s",
             description: "Time taken to process domain events");
+    }
 
     /// <summary>
     /// Executes the background service logic for processing outbox messages.
@@ -137,10 +144,12 @@ public class OutboxProcessor(
                 await transaction.CommitAsync(cancellationToken);
 
                 stopwatch.Stop();
-                _eventProcessingTime.Record(stopwatch.Elapsed.TotalSeconds,
+                _eventProcessingTime.Record(
+                    stopwatch.Elapsed.TotalSeconds,
                     new KeyValuePair<string, object?>("event_type", message.Type));
 
-                _processedEventsCounter.Add(1,
+                _processedEventsCounter.Add(
+                    1,
                     new KeyValuePair<string, object?>("event_type", message.Type));
 
                 _logger.LogInformation(
@@ -154,7 +163,8 @@ public class OutboxProcessor(
                 _logger.LogError(ex, "Error processing outbox message {Id}", message.Id);
                 message.Error = ex.Message;
 
-                _failedEventsCounter.Add(1,
+                _failedEventsCounter.Add(
+                    1,
                     new KeyValuePair<string, object?>("event_type", message.Type ?? "unknown"));
 
                 await dbContext.SaveChangesAsync(cancellationToken);
