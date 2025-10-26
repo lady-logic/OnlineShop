@@ -408,31 +408,52 @@ Die API ist vollständig mit Swagger/OpenAPI dokumentiert. Alle Endpunkte enthal
 Zugriff auf die interaktive Dokumentation unter `/swagger` beim Ausführen der Anwendung.
 
 ## Observability
-Die Anwendung implementiert moderne Observability-Praktiken:
 
-### Strukturiertes Logging mit Serilog
+Die Anwendung implementiert einen vollständigen Observability-Stack für umfassendes Monitoring und Fehlerdiagnose:
 
-JSON-formatierte Logs für bessere Suchbarkeit und Analyse
-Automatische Anreicherung mit Kontextinformationen (Maschinennamen, Thread-IDs, etc.)
-Ausgabe in Konsole und Dateisystem
+### Drei-Säulen der Observability
 
-### Metriken mit OpenTelemetry und Prometheus
+1. **Logs**: Strukturiertes Logging mit Serilog
+   - JSON-formatierte Logs für bessere Suchbarkeit
+   - Zentrale Log-Sammlung mit Loki und Promtail
+   - Korrelation durch Trace-IDs und automatische Kontextanreicherung
+   - Log-Levels für detaillierte Fehleranalyse
 
-Automatische Erfassung von ASP.NET Core und HTTP-Client-Metriken
-Benutzerdefinierte Domain-Event-Metriken (Verarbeitete Events, Fehlerrate, Verarbeitungszeit)
-Speicherung in Prometheus Zeitreihen-Datenbank
+2. **Metriken**: Leistungsmessung mit OpenTelemetry und Prometheus
+   - API-Performance (Anfragen/Sekunde, Antwortzeiten)
+   - Domain-Event-Verarbeitung (Durchsatz, Fehlerrate, Verarbeitungszeit)
+   - Benutzerdefinierte Geschäftsmetriken für Domain-Events
+   - Langzeitdaten in Prometheus-Zeitreihendatenbank
 
-### Tracing mit OpenTelemetry
+3. **Tracing**: Request-Verfolgung mit OpenTelemetry
+   - Ende-zu-Ende-Nachverfolgung von Anfragen
+   - Automatische Instrumentierung von ASP.NET Core
+   - Visualisierung von Bottlenecks und langsamen Operationen
+   - Verbindung zwischen HTTP-Anfragen, DB-Operationen und Event-Verarbeitung
 
-Verteiltes Tracing über Service-Grenzen hinweg
-Automatische Instrumentierung von ASP.NET Core und Entity Framework Core
-Korrelation zwischen Logs, Metriken und Traces
+### Observability-Stack
 
-### Visualisierung mit Grafana
+- **Serilog**: Strukturiertes Logging-Framework
+- **OpenTelemetry**: Offener Standard für Metriken und Traces
+- **Prometheus**: Zeitreihendatenbank für Metriken
+- **Loki**: Effizienter Log-Aggregator von Grafana
+- **Promtail**: Log-Sammler für Loki
+- **Grafana**: Visualisierungsplattform für Dashboards
 
-Vorkonfigurierte Dashboards für API-Gesundheit und Domain-Event-Monitoring
-Echtzeit-Überwachung der Anwendungsleistung
-Anpassbare Alarme für wichtige Metriken
+### Dashboards und Visualisierung
+
+Im Repository sind vorkonfigurierte Dashboards enthalten (`infra/grafana/dashboards/`):
+- API-Monitoring: Anfragen, Antwortzeiten, Fehlerraten
+- Domain-Event-Monitoring: Verarbeitete Events, Dauer, Fehler
+- Integrierte Log-Ansicht für schnelle Fehlersuche
+
+### Konfiguration und Zugriff
+
+- Grafana: http://localhost:3000 (admin/password)
+- Prometheus: http://localhost:9090
+- Loki (über Grafana): Explore → Loki Datasource
+
+Diese umfassende Observability-Lösung ermöglicht tiefe Einblicke in die Anwendung und unterstützt bei der Diagnose und Behebung von Problemen in Echtzeit.
 
 ## Lernziele
 
