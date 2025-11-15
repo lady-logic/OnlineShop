@@ -1,4 +1,5 @@
 ﻿using FluentAssertions;
+using Microsoft.Extensions.Logging;
 using Moq;
 using ProductCatalog.Application.Features.AddProduct;
 using ProductCatalog.Domain.Entities;
@@ -13,6 +14,7 @@ public class AddProductCommandHandlerTests
 {
     private readonly Mock<IProductRepository> _repositoryMock;
     private readonly AddProductCommandHandler _handler;
+    private readonly Mock<ILogger<AddProductCommandHandler>> _loggerMock;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="AddProductCommandHandlerTests"/> class.
@@ -20,7 +22,8 @@ public class AddProductCommandHandlerTests
     public AddProductCommandHandlerTests()
     {
         _repositoryMock = new Mock<IProductRepository>();
-        _handler = new AddProductCommandHandler(_repositoryMock.Object);
+        _loggerMock = new Mock<ILogger<AddProductCommandHandler>>();
+        _handler = new AddProductCommandHandler(_repositoryMock.Object, _loggerMock.Object);
     }
 
     /// <summary>

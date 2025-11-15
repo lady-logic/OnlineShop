@@ -33,7 +33,16 @@ public static class DependencyInjection
         services.AddDbContext<ProductCatalogDbContext>((serviceProvider, options) =>
         {
             var connectionString = configuration.GetConnectionString("DefaultConnection");
-            options.UseSqlite(connectionString);
+
+            options.UseSqlite(connectionString, sqliteOptions =>
+            {
+                // Command-Timeout auf 30 Sekunden setzen
+                sqliteOptions.CommandTimeout(30);
+            });
+
+            // Logging hinzufügen 
+            options.LogTo(Console.WriteLine, LogLevel.Information)
+                   .EnableSensitiveDataLogging();
 
             // Interceptor hinzufügen
             options.AddInterceptors(
@@ -66,7 +75,7 @@ public static class DependencyInjection
         });
 
         // IMessageBroker mit der MassTransit-Implementierung registrieren
-        services.AddSingleton<IMessageBroker, MassTransitMessageBroker>();
+        services.AddScoped<IMessageBroker, MassTransitMessageBroker>();
 
         return services;
     }
