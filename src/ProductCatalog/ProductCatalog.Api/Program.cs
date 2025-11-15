@@ -1,23 +1,17 @@
-using System.Reflection;
+using Microsoft.EntityFrameworkCore;
 using ProductCatalog.Api.Extensions;
 using ProductCatalog.Application;
 using ProductCatalog.Infrastructure;
+using ProductCatalog.Infrastructure.Persistence;
 using Serilog;
-using Serilog.Sinks.Grafana.Loki;
+using Serilog.Formatting.Json;
+using System.Reflection;
 
 // Serilog Konfiguration
 Log.Logger = new LoggerConfiguration()
-    .MinimumLevel.Debug()
-    .Enrich.WithProperty("Application", "DirectLogPushApp")
+    .WriteTo.Console(new JsonFormatter()) // Strukturiertes JSON für Promtail
+    .Enrich.WithProperty("Application", "ProductCatalog") // Labels hinzufügen
     .Enrich.WithProperty("Environment", "Development")
-    .WriteTo.Console()
-    .WriteTo.GrafanaLoki(
-        "http://localhost:3100",
-        labels: new[] {
-            new LokiLabel { Key = "job", Value = "onlineshop" },
-            new LokiLabel { Key = "service", Value = "product-catalog-api" }
-        }
-    )
     .CreateLogger();
 
 try
@@ -54,6 +48,14 @@ try
     builder.Services.AddInfrastructure(builder.Configuration);
 
     var app = builder.Build();
+
+    // Datenbank-Migration beim Start anwenden
+    using (var scope = app.Services.CreateScope())
+    {
+        var dbContext = scope.ServiceProvider.GetRequiredService<ProductCatalogDbContext>();
+        await dbContext.Database.MigrateAsync();
+        Log.Information("Database migrations applied successfully");
+    }
 
     // Configure pipeline
     if (app.Environment.IsDevelopment())
