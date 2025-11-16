@@ -1,0 +1,80 @@
+version: '3.8'
+
+services:
+  loki:
+    image: grafana/loki:2.9.3
+    ports:
+      - "3100:3100"
+    command: -config.file=/etc/loki/local-config.yaml
+    volumes:
+      - ./loki-config.yaml:/etc/loki/local-config.yaml
+    networks:
+      - observability
+
+  promtail:
+     image: grafana/promtail:latest
+     ports:
+       - "9080:9080"
+     volumes:
+       - ./promtail-config.yml:/etc/promtail/config.yml
+       - /var/lib/docker/containers:/var/lib/docker/containers:ro
+       - /var/run/docker.sock:/var/run/docker.sock
+     command: -config.file=/etc/promtail/config.yml
+     networks:
+       - observability
+
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+      - GF_SECURITY_ALLOW_EMBEDDING=true
+    volumes:
+      - ./configs/grafana/datasources/datasource.yml:/etc/grafana/provisioning/datasources/datasources.yml
+      - ./configs/grafana/dashboards:/etc/grafana/provisioning/dashboards
+    networks:
+      - observability
+    depends_on:
+      - loki
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    ports:
+        - "5672:5672"
+        - "15672:15672"
+    environment:
+        - RABBITMQ_DEFAULT_USER=guest
+        - RABBITMQ_DEFAULT_PASS=guest
+    networks:
+        - observability
+
+  productcatalog:
+    build:
+      context: .
+      dockerfile: src/ProductCatalog/ProductCatalog.Api/Dockerfile
+    ports:
+      - "5001:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Data Source=/app/data/productcatalog.db
+      - RabbitMQ__HostName=rabbitmq
+      - RabbitMQ__Username=guest
+      - RabbitMQ__Password=guest
+      - ASPNETCORE_HTTP_PORTS=8080
+    volumes:
+      - ./data:/app/data
+    depends_on:
+      - rabbitmq
+      - loki
+    networks:
+      - observability
+
+networks:
+  observability:
+    driver: bridge
+
+volumes:
+  loki-data:
+  grafana-data:
