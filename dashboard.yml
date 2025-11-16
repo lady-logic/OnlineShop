@@ -1,0 +1,10 @@
+apiVersion: 1
+
+providers:
+  - name: 'DotNet Dashboards'
+    folder: 'DotNet'
+    type: file
+    disableDeletion: true
+    editable: true
+    options:
+      path: /etc/grafana/provisioning/dashboards/json

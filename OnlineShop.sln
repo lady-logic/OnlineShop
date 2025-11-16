@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.14.36408.4 d17.14
+VisualStudioVersion = 17.14.36408.4
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
 EndProject
@@ -30,9 +30,35 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		.editorconfig = .editorconfig
 		.gitignore = .gitignore
 		Directory.Build.props = Directory.Build.props
+		docker-compose.observability.yml = docker-compose.observability.yml
 		README.md = README.md
 		styleguide.ruleset = styleguide.ruleset
 	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "configs", "configs", "{F426EA04-F311-438F-8822-984417145969}"
+	ProjectSection(SolutionItems) = preProject
+		loki-config.yaml = loki-config.yaml
+		promtail-config.yml = promtail-config.yml
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "grafana", "grafana", "{AE883D34-3813-41F0-8DEE-C29513DA5342}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "datasources", "datasources", "{5B220AEE-BA1E-4925-B072-1A59333B1C67}"
+	ProjectSection(SolutionItems) = preProject
+		datasource.yml = datasource.yml
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "dashboards", "dashboards", "{B79F2C45-2846-4271-900A-E304D135B7AA}"
+	ProjectSection(SolutionItems) = preProject
+		dashboard.yml = dashboard.yml
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "json", "json", "{6FEA6C43-AD15-475D-BE7D-872EB1BEC00C}"
+	ProjectSection(SolutionItems) = preProject
+		dotnet-dashboard.json = dotnet-dashboard.json
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "logs", "logs", "{F6DA2280-8326-49CD-9019-925DA45D733A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -76,6 +102,10 @@ Global
 		{379262EA-407B-4588-9346-438A20073E3D} = {F8D6C0A6-B8AF-4014-9922-0F2F027FC8A9}
 		{3F979546-B7DE-9508-562D-20195CEF8046} = {F8D6C0A6-B8AF-4014-9922-0F2F027FC8A9}
 		{C8B18708-BD5F-EA2A-717E-E7E00B68A09F} = {F8D6C0A6-B8AF-4014-9922-0F2F027FC8A9}
+		{AE883D34-3813-41F0-8DEE-C29513DA5342} = {F426EA04-F311-438F-8822-984417145969}
+		{5B220AEE-BA1E-4925-B072-1A59333B1C67} = {AE883D34-3813-41F0-8DEE-C29513DA5342}
+		{B79F2C45-2846-4271-900A-E304D135B7AA} = {AE883D34-3813-41F0-8DEE-C29513DA5342}
+		{6FEA6C43-AD15-475D-BE7D-872EB1BEC00C} = {B79F2C45-2846-4271-900A-E304D135B7AA}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {2C7F5FD0-B2B3-4535-9472-A82F0E03D060}
